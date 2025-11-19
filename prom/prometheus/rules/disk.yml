@@ -1,0 +1,57 @@
+groups:
+- name: disk
+  rules:
+  - alert: disk_free_10_percent
+    expr: round(node_filesystem_avail_bytes * 100 / node_filesystem_size_bytes) < 10
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "Less than {{$value}}% left on disk {{$labels.mountpoint}}, host {{$labels.instance}}"
+
+  - alert: disk_overloaded_90
+    expr: (irate(node_disk_io_time_ms[1h]) / 10) > 90
+    for: 30m
+    labels:
+      severity: critical
+    annotations:
+      description: "Disk {{ $labels.device }} haves too much R/W operations on {{ $value }}%, {{ $labels.instance }}"
+
+  - alert: disk_overloaded_70
+    expr: (irate(node_disk_io_time_ms[1h]) / 10) > 70
+    for: 30m
+    labels:
+      severity: critical
+    annotations:
+      description: "Disk {{ $labels.device }} haves too much R/W operations on {{ $value }}%, {{ $labels.instance }}"
+
+  # Please add ignored mountpoints in node_exporter parameters like
+  # "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/)".
+  # Same rule using "node_filesystem_free_bytes" will fire when disk fills for non-root users.
+
+  - alert: host_out_of_inodes
+    expr: node_filesystem_files_free / node_filesystem_files * 100 < 10 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      description: Host out of inodes (mountpoint {{ $labels.mountpoint }})
+      summary: "Disk is almost running out of available inodes (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+  - alert: host_unusual_disk_read_latency
+    expr: rate(node_disk_read_time_seconds_total[1m]) / rate(node_disk_reads_completed_total[1m]) > 0.2 and rate(node_disk_reads_completed_total[1m]) > 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "Disk latency is growing (read operations > 100ms)\n  VALUE = {{ $value }}"
+      summary: "Disk latency is growing (read operations > 100ms)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+  - alert: host_unusual_disk_write_latency
+    expr: rate(node_disk_write_time_seconds_total[1m]) / rate(node_disk_writes_completed_total[1m]) > 0.2 and rate(node_disk_writes_completed_total[1m]) > 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "Disk latency is growing (write operations > 100ms)\n  VALUE = {{ $value }}"
+      summary: "Disk latency is growing (write operations > 100ms)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

@@ -1,0 +1,66 @@
+groups:
+- name: zfs_telegraf_alerts
+  rules:
+
+  - alert: ZFSPoolNotOnline
+    expr: zfs_pool_health_status != 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "ZFS pool {{ $labels.pool }} is not ONLINE"
+      description: "Pool '{{ $labels.pool }}' has health status {{ $value }} (expected 0 = ONLINE)."
+
+  - alert: ZFSPoolIOErrors
+    expr: zfs_pool_read_errors > 0 or zfs_pool_write_errors > 0 or zfs_pool_checksum_errors > 0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "ZFS pool I/O errors on {{ $labels.pool }}"
+      description: "Pool '{{ $labels.pool }}' has read/write/checksum errors. Check 'zpool status'."
+
+  - alert: ZFSPoolLowFreeSpace
+    expr: (zfs_pool_size_bytes - zfs_pool_allocated_bytes) / zfs_pool_size_bytes < 0.10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "ZFS pool '{{ $labels.pool }}' low on free space"
+      description: "Less than 10% free space left on pool '{{ $labels.pool }}'."
+
+  - alert: ZFSArcHitRatioLow
+    expr: (zfs_arc_hits / (zfs_arc_hits + zfs_arc_misses)) < 0.80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "ZFS ARC hit ratio is low"
+      description: "ARC hit ratio is {{ $value | printf \"%.2f\" }}. Consider checking RAM pressure or cache tuning."
+
+  - alert: ZFSL2ARCIOErrors
+    expr: zfs_arc_l2_io_error > 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "ZFS L2ARC I/O errors"
+      description: "There are {{ $value }} I/O errors in L2ARC cache device. May indicate failing SSD."
+
+  - alert: ZFSL2ARCHitRatioLow
+    expr: (zfs_arc_l2_hits / (zfs_arc_l2_hits + zfs_arc_l2_misses)) < 0.10
+    for: 10m
+    labels:
+      severity: info
+    annotations:
+      summary: "ZFS L2ARC cache ineffective"
+      description: "L2ARC hit ratio is below 10%. Most reads miss the L2ARC. Consider tuning ARC/L2ARC size."
+
+  - alert: ZFSDatasetHighDeletionRate
+    expr: rate(zfs_dataset_deleted[5m]) > 1000
+    for: 1m
+    labels:
+      severity: info
+    annotations:
+      summary: "High deletion rate in ZFS dataset"
+      description: "Dataset '{{ $labels.dataset }}' is experiencing high deletion rate. Possibly snapshot churn."

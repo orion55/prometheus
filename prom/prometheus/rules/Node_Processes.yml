@@ -1,0 +1,18 @@
+groups:
+- name: proccesses
+  rules:
+  - alert: processes_in_d_state
+    expr: node_processes_state{state="D"} > 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "Processes with D state (uninterruptible sleep) on {{ $labels.instance }} for 5 minutes: {{ $value }}"
+
+  - alert: too_many_processes
+    expr: node_processes_threads > 2000
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "More than 2000 processes on {{ $labels.instance }}: {{ $value }}"

@@ -1,0 +1,10 @@
+groups:
+- name: node_reboot
+  rules:
+  - alert: node_reboot
+    expr: changes(node_boot_time_seconds[1h]) > 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: "Reboot detected on {{ $labels.instance }}. Boot time changed by {{ $value }} seconds"

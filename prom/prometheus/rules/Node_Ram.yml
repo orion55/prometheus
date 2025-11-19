@@ -1,0 +1,28 @@
+groups:
+- name: ram
+  rules:
+  - alert: ram_low
+    expr: round(node_memory_MemAvailable/1024/1024) < 250
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "Low avaialble memory {{$value}} on {{$labels.instance}}"
+
+  - alert: host_out_of_memory
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: Host out of memory (instance {{ $labels.instance }})
+      description: "Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+  - alert: host_oom_kill_detected
+    expr: increase(node_vmstat_oom_kill[1m]) > 0
+    for: 0m
+    labels:
+      severity: warning
+    annotations:
+      summary: Host OOM kill detected (instance {{ $labels.instance }})
+      description: "OOM kill detected\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

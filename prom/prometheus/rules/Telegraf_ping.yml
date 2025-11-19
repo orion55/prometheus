@@ -1,0 +1,18 @@
+groups:
+- name: telegraf_ping
+  rules:
+  - alert: ping_percent_packet_loss
+    expr: ping_percent_packet_loss > 20
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: '{{ $labels.url }} high ICMP ping loss'
+
+  - alert: ping_average_response_ms
+    expr: ping_average_response_ms > 500
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: '{{ $labels.url }} high ICMP ping response time {{ $labels.url }} ms'

@@ -30,6 +30,21 @@ services:
     volumes:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
 
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - 127.0.0.1:9093:9093
+    container_name: alertmanager
+    hostname: alertmanager
+    environment:
+      TZ: "Europe/Moscow"
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/etc/alertmanager/data'
+    volumes:
+      - ./alertmanager/:/etc/alertmanager/
+
 volumes:
   prom_data:
   grafana-storage:

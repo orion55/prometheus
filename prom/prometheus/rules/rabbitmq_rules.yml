@@ -1,0 +1,56 @@
+groups:
+  - name: rabbitmq.rules
+    rules:
+      - alert: RabbitMQNodeDown
+        expr: rabbitmq_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ node {{ $labels.node }} is down"
+          description: "No response from RabbitMQ node {{ $labels.node }} for more than 1 minute."
+
+      - alert: RabbitMQMemoryAlarm
+        expr: rabbitmq_node_mem_alarm == 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Memory alarm triggered on RabbitMQ node {{ $labels.node }}"
+          description: "RabbitMQ node {{ $labels.node }} memory usage exceeded the limit."
+
+      - alert: RabbitMQHighConnectionCount
+        expr: rabbitmq_connections > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of connections on RabbitMQ node {{ $labels.node }}"
+          description: "There are more than 1000 connections on RabbitMQ node {{ $labels.node }}."
+
+      - alert: RabbitMQHighConsumerCount
+        expr: rabbitmq_consumers == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No consumers on RabbitMQ node {{ $labels.node }}"
+          description: "No message consumers detected on RabbitMQ node {{ $labels.node }} for over 10 minutes."
+
+      - alert: RabbitMQQueuesHigh
+        expr: rabbitmq_queues > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of queues on RabbitMQ node {{ $labels.node }}"
+          description: "Number of queues is above 100 on RabbitMQ node {{ $labels.node }}."
+
+      - alert: RabbitMQMessageBacklog
+        expr: rabbitmq_queue_messages_global > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Message backlog on RabbitMQ cluster"
+          description: "Total messages in queues exceed 500 in the cluster."

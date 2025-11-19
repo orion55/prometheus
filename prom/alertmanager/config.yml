@@ -1,0 +1,22 @@
+global:
+  resolve_timeout: 30m
+
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+route:
+  group_by: []
+  group_wait: 30s
+  group_interval: 30s
+  repeat_interval: 24h
+  receiver: atm-alerts
+
+receivers:
+- name: atm-alerts
+  telegram_configs:
+  - api_url: https://api.telegram.org
+    bot_token: 8335009134:AAGM-pnQr7K48gX-0ec9foo5o7twxucGcLU
+    chat_id: 311189536
+    message: '{{ template "telegram.message" . }}'
+    parse_mode: HTML
+    send_resolved: true

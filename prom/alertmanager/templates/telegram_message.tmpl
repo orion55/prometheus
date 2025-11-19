@@ -1,0 +1,23 @@
+{{ define "telegram.message" }}
+{{ range .Alerts }}
+{{ if eq .Status "firing" }}[FIRING 🔥]{{ else }}[RESOLVED ✅]{{ end }} <b>{{ .Labels.alertname }}</b>
+
+Instance: <code>{{ .Labels.instance }}</code>
+{{ if .Annotations.summary }}
+⚠️ <b>Summary:</b> {{ .Annotations.summary }}
+{{ end }}
+{{ if .Annotations.description }}
+📝 <b>Description:</b> {{ .Annotations.description }}
+{{ end }}
+{{ if .Annotations.value }}
+📊 VALUE = {{ .Annotations.value }}
+{{ end }}
+
+🔖 <b>Labels:</b>
+{{- range $key, $value := .Labels }}
+- <code>{{ $key }}: {{ $value }}</code>
+{{- end }}
+
+---
+{{ end }}
+{{ end }}

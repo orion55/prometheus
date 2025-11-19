@@ -1,0 +1,53 @@
+groups:
+- name: BlackboxSlow
+  rules:
+  - alert: CertificateExpiry30Days
+    expr: probe_ssl_earliest_cert_expiry - time() < 60 * 60 * 24 * 30
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Certificate will expire in 30 days {{ $labels.instance }}"
+
+  - alert: CertificateExpiry15Days
+    expr: probe_ssl_earliest_cert_expiry - time() < 60 * 60 * 24 * 15
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Certificate will expire in 15 days {{ $labels.instance }}"
+
+  - alert: CertificateExpiry1Day
+    expr: probe_ssl_earliest_cert_expiry - time() < 60 * 60 * 24
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Certificate will expire in 1 day {{ $labels.instance }}"
+
+  - alert: BlackboxSlowProbe
+    expr: avg_over_time(probe_duration_seconds[1m]) > 5
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: Blackbox slow probe (instance {{ $labels.instance }})
+      description: "Blackbox probe took more than 1s to complete\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+  - alert: BlackboxProbeHttpFailure
+    expr: probe_http_status_code <= 199 OR probe_http_status_code >= 400
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Blackbox probe HTTP failure (instance {{ $labels.instance }})
+      description: "HTTP status code is not 200-399\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+  - alert: BlackboxTargetDown
+    expr: probe_success == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Blackbox probe failed for {{ $labels.instance }}"
+      description: "Blackbox probe to {{ $labels.instance }} failed (module: {{ $labels.module }})."

@@ -1,0 +1,10 @@
+groups:
+  - name: alerting_check
+    rules:
+    - alert: alerting_check
+      expr: (hour(time() + vector(0)) == 7) and (minute(time() + vector(0)) == 0)
+      for: 0m
+      labels:
+        severity: info
+      annotations:
+        description: "I am alive"

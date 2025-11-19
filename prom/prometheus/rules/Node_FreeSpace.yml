@@ -1,0 +1,42 @@
+groups:
+- name: node_free_space
+  rules:
+  - alert: disk_will_fill_in_4_hours
+    expr: predict_linear(node_filesystem_avail{job="node"}[1h], 4 * 3600) < 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "Disk will fill in 4 hours on {{ $labels.instance }} (linear prediction)"
+
+  - alert: disk_free_10_percent
+    expr: node_filesystem_avail_bytes/node_filesystem_size_bytes*100 < 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: "Disk free space  on {{ $labels.instance }} is lower than 10%: {{ $value }}%"
+
+  - alert: disk_free_5_percent
+    expr: node_filesystem_avail_bytes/node_filesystem_size_bytes*100 < 5
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "Disk free space  on {{ $labels.instance }} is lower than 5%: {{ $value }}%"
+
+  - alert: out_of_inodes
+    expr: node_filesystem_files_free / node_filesystem_files * 100 < 30
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: "Available inodes amount on {{ $labels.instance }} is less than 30 percent: {{ $value }}%"
+
+  - alert: more_than_10_percent_inodes_used
+    expr: 100 * (node_filesystem_files - node_filesystem_files_free) / node_filesystem_files > 60
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      description: "More than 60% inodes used on {{ $labels.instance }}: {{ $value }}%"

@@ -1,0 +1,19 @@
+groups:
+- name: node_cpu_load
+  rules:
+  - alert: cpu_utilization_over_85_percent
+    expr: 100 - (avg without (cpu, mode) (rate(node_cpu_seconds_total{mode="idle"}[5m]))*100) > 85
+    for: 2h
+    labels:
+      severity: warning
+    annotations:
+      description: "CPU utilization on {{ $labels.instance }} is higher than 85% for 5 minutes: {{ $value }}%"
+
+
+  - alert: cpu_utilization_over_95_percent
+    expr: 100 - (avg without (cpu, mode) (rate(node_cpu_seconds_total{mode="idle"}[5m]))*100) > 95
+    for: 2h
+    labels:
+      severity: critical
+    annotations:
+      description: "CPU utilization on {{ $labels.instance }} is higher than 95% for 5 minutes: {{ $value }}%"

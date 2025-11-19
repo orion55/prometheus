@@ -1,0 +1,57 @@
+groups:
+  - name: backup-alerts
+    rules:
+
+    - alert: BackupMissing
+      expr: prometheus_backup_storage_has_recent_backup == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "backup_missing"
+        description: |
+          No recent backup detected for {{ $labels.service }} ({{ $labels.db_type }}) on {{ $labels.host }}.
+          This might indicate that the backup process failed or stopped completely.
+        runbook: "Check the backup pipeline and logs for {{ $labels.service }}."
+
+    - alert: BackupTooOld
+      expr: prometheus_backup_storage_latest_backup_age_seconds > 90000
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "backup_too_old"
+        description: |
+          Last backup for {{ $labels.service }} ({{ $labels.db_type }}) on {{ $labels.host }} is older than 25 hours.
+          Age: {{ $value | humanizeDuration }}.
+        runbook: "Ensure scheduled backups are running as expected."
+
+    - alert: BackupSizeTooSmall
+      expr: prometheus_backup_storage_latest_backup_size_bytes < 1000000
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "backup_size_too_small"
+        description: |
+          Backup size for {{ $labels.service }} ({{ $labels.db_type }}) on {{ $labels.host }} is less than 1MB.
+          Size: {{ $value | humanize1024 }}.
+          This could indicate a broken or empty backup file.
+        runbook: "Inspect the backup archive contents and logs."
+
+    - alert: BackupSizeDropDetected
+      expr: |
+        (
+          prometheus_backup_storage_latest_backup_size_bytes
+          < predict_linear(prometheus_backup_storage_latest_backup_size_bytes[6h], 0)
+            * 0.5
+        )
+      for: 20m
+      labels:
+        severity: critical
+      annotations:
+        summary: "backup_size_drop_detected"
+        description: |
+          Backup size for {{ $labels.service }} ({{ $labels.db_type }}) on {{ $labels.host }} dropped more than 50% compared to trend!
+          Current size: {{ $value | humanize1024 }}.
+        runbook: "Check what caused the backup size to shrink — was data deleted, or backup incomplete?"

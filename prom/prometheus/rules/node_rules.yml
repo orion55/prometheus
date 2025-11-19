@@ -1,0 +1,52 @@
+groups:
+- name: node_rules
+  rules:
+  - alert: node_down
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: "Instance {{ $labels.instance }} down\n {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes."
+
+  - alert: node_load_average
+    expr: node_load1 > (node_cpu_cores * node_cpu_count * node_cpu_threads_per_core * 4)
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      description: "LA {{$value}} on {{$labels.instance}} is too hight"
+
+  - alert: node_too_many_opened_files
+    expr: process_open_fds*100/process_max_fds > 70
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "Running out of file descriptors on instance {{$labels.instance}}, more than 70% used {{$value}}"
+
+  - alert: node_reboot_detected
+    expr: (time() - node_boot_time_seconds) < 1200
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "Uptime for {{$labels.instance}} is less than 20 minutes, reboot detected!"
+
+  - alert: host_cpu_steal_noisy_neighbor
+    expr: avg by(instance) (rate(node_cpu_seconds_total{mode="steal"}[5m])) * 100 > 10
+    for: 2h
+    labels:
+      severity: warning
+    annotations:
+      description: "CPU steal is > 10%. A noisy neighbor is killing VM performances or a spot instance may be out of credit.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      summary: Host CPU steal noisy neighbor (instance {{ $labels.instance }})
+
+  - alert: host_high_cpu_load
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 2h
+    labels:
+      severity: warning
+    annotations:
+      description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      summary: Host high CPU load (instance {{ $labels.instance }})

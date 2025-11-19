@@ -1,0 +1,10 @@
+groups:
+- name: telegraf_net_response
+  rules:
+  - alert: net_response_result_code
+    expr: net_response_result_code != 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: 'No tcp response from {{ $labels.instance }} port:{{ $labels.port }}'

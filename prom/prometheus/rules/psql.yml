@@ -1,0 +1,58 @@
+groups:
+  - name: postgres_rules
+    rules:
+
+    - alert: PostgreSQLDown
+      expr: pg_up == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "PostgreSQL is down ({{ $labels.instance }})"
+        description: "Exporter can't reach PostgreSQL. Check if the DB is running and accessible."
+
+    - alert: PostgreSQLHighConnections
+      expr: (pg_stat_database_numbackends / pg_settings_max_connections) > 0.9
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High PostgreSQL connection usage ({{ $labels.instance }})"
+        description: "More than 90% of max_connections are in use. Risk of connection exhaustion."
+
+    - alert: PostgreSQLTooManyDeadlocks
+      expr: rate(pg_stat_database_deadlocks[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "PostgreSQL deadlocks detected ({{ $labels.instance }}, DB: {{ $labels.datname }})"
+        description: "Deadlocks are happening in the database. Review locking logic and queries."
+
+    - alert: PostgreSQLTooManyTempFiles
+      expr: rate(pg_stat_database_temp_files[5m]) > 5
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Excessive temporary file usage in PostgreSQL ({{ $labels.instance }}, DB: {{ $labels.datname }})"
+        description: "Frequent temp file creation may indicate inefficient queries or low work_mem."
+
+    - alert: PostgreSQLSlowCheckpoints
+      expr: rate(pg_stat_bgwriter_checkpoint_write_time[5m]) > 5000
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Slow checkpoints in PostgreSQL ({{ $labels.instance }})"
+        description: "Checkpoints are taking over 5s on average. Could cause write stalls."
+
+    - alert: PostgreSQLLowCacheHitRate
+      expr: (pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read)) < 0.9
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Low cache hit rate in PostgreSQL ({{ $labels.instance }}, DB: {{ $labels.datname }})"
+        description: "Cache hit rate below 90%. Check if shared_buffers is too low or queries are inefficient."
+

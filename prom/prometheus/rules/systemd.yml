@@ -1,0 +1,10 @@
+groups:
+- name: systemd
+  rules:
+  - alert: systemd_service_is_not_running
+    expr: node_systemd_unit_state{state="failed",name!~"fwupd.*"} == 1
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "{{$labels.name}} service is not in running state\n Server {{$labels.instance}}. Service {{$labels.name}}"
