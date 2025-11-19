@@ -15,8 +15,8 @@ receivers:
 - name: atm-alerts
   telegram_configs:
   - api_url: https://api.telegram.org
-    bot_token: 8335009134:AAGM-pnQr7K48gX-0ec9foo5o7twxucGcLU
-    chat_id: 311189536
+    bot_token: '{{ env "TELEGRAM_BOT_TOKEN" }}'
+    chat_id: '{{ env "TELEGRAM_CHAT_ID" }}'
     message: '{{ template "telegram.message" . }}'
     parse_mode: HTML
     send_resolved: true
