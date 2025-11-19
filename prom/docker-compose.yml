@@ -27,6 +27,8 @@ services:
     container_name: "${PROJECT_NAME}-loki"
     ports:
       - 3100:3100
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
 
 volumes:
   prom_data:
