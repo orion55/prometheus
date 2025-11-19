@@ -1,16 +1,5 @@
-x-def-logging: &default-logging
-  logging:
-    driver: "loki"
-    options:
-      loki-url: "http://192.168.131.135:3100/loki/api/v1/push"
-      loki-batch-size: "100"
-      loki-retries: 3
-      loki-max-backoff: 1000ms
-      loki-timeout: 1s
-
 services:
   mysql:
-    <<: *default-logging
     image: mysql:9.5.0
     restart: always
     environment:
@@ -24,7 +13,6 @@ services:
       - db:/var/lib/mysql
 
   wordpress:
-    <<: *default-logging
     image: wordpress:6.8.3
     restart: always
     environment:
@@ -81,6 +69,18 @@ services:
       - "9104:9104"
     depends_on:
       - mysql
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    ports:
+      - "9080:9080"
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    privileged: true
 
 volumes:
   db:
