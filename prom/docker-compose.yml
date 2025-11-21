@@ -46,8 +46,6 @@ services:
       - .env
     environment:
       TZ: "Europe/Moscow"
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
     volumes:
       - alertmanager-data:/alert_data
       - ./alertmanager/config.yml:/etc/alertmanager/config.yml:ro
