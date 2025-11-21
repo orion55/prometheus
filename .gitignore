@@ -1,1 +1,2 @@
 /wp/.srv/wordpress/*
+prom/alertmanager/config.yml

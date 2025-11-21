@@ -28,7 +28,7 @@ services:
     ports:
       - 3100:3100
     volumes:
-      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - ./loki/loki-config.yaml:/etc/loki/local-config.yaml
 
   alertmanager:
     image: prom/alertmanager
@@ -36,15 +36,24 @@ services:
       - 127.0.0.1:9093:9093
     container_name: alertmanager
     hostname: alertmanager
-    environment:
-      TZ: "Europe/Moscow"
     restart: unless-stopped
+    user: "0:0"
     command:
       - '--config.file=/etc/alertmanager/config.yml'
-      - '--storage.path=/etc/alertmanager/data'
+      - '--storage.path=/alert_data'
+      - '--cluster.listen-address='
+    env_file:
+      - .env
+    environment:
+      TZ: "Europe/Moscow"
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
     volumes:
-      - ./alertmanager/:/etc/alertmanager/
+      - alertmanager-data:/alert_data
+      - ./alertmanager/config.yml:/etc/alertmanager/config.yml:ro
+      - ./alertmanager/templates:/etc/alertmanager/templates:ro
 
 volumes:
   prom_data:
   grafana-storage:
+  alertmanager-data:
